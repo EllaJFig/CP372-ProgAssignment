@@ -15,21 +15,17 @@ from datetime import datetime
 MAX_CLIENTS = 3
 FILE_PATH = None
 clients = {} #create client cache; should have address, start time, and end time be recorded
-client_count = 0
-
 
 '''
 This function will handle the individual connections
 '''
-def client_handling(client_socket, addr):
-    global client_count
-    
-    client_name = f"{addr}" #address is used because it needs to be unique to client
+def client_handling(client_socket, addr, client_name):
+
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_time = None
-
-    print(f"Client0{client_count} connected")
-    clients[client_name] = {"address": addr, "connected_at": start_time, "disconnected_at": end_time} #add client to cache
+    
+    print(f"{client_name} connected")
+    clients[client_name] = {f"address: {addr}", f"connected_at: {start_time}", f"disconnected_at: {end_time}"} #add client to cache
 
     while True:
         data = client_socket.recv(1024).decode() #receive (up to 1024 bytes)
@@ -46,14 +42,14 @@ def client_handling(client_socket, addr):
             else --> send data ACK back to client 
         '''
         if data.lower() == "exit":
-            print(f"Client0{client_count} disconnected")
-            clients[client_name]["disconnected_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"{client_name} disconnected")
+            clients[client_name] = (f"address: {addr}", f"connected_at: {start_time}", f"disconnected_at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}") 
             client_count -= 1
             break
         elif data.lower() == "status":
             status = []
             for name, info in clients.items():
-                status.append(f"Client0{client_count}: {info}")
+                status.append(f"{name}: {info}")
 
             status_str = "\n".join(status)
             client_socket.send(status_str.encode())
@@ -73,7 +69,7 @@ def client_handling(client_socket, addr):
 This function is to handle new connection and distribute them to where they need to go
 '''
 def start_server():
-    global client_count
+
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
     server_socket.bind(('localhost', 12345))  # Bind to localhost on port 12345
@@ -86,11 +82,13 @@ def start_server():
 
         client_socket, addr = server_socket.accept() #accept; gives the information about the connection
 
-        client_count += 1
-        if client_count > MAX_CLIENTS:
+   
+        if len(clients)+ 1 > MAX_CLIENTS:
             break
+        
+        client_name = f"Client{len(clients)+ 1}"
 
-        thread = threading.Thread(target=client_handling, args=(client_socket,addr))
+        thread = threading.Thread(target=client_handling, args=(client_socket,addr,client_name))
         thread.start()
 
 
