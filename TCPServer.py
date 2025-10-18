@@ -15,17 +15,22 @@ from datetime import datetime
 MAX_CLIENTS = 3
 FILE_PATH = None
 clients = {} #create client cache; should have address, start time, and end time be recorded
+client_count = 0
 
 '''
 This function will handle the individual connections
 '''
 def client_handling(client_socket, addr, client_name):
-
+    global client_count
     start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    end_time = None
     
     print(f"{client_name} connected")
-    clients[client_name] = {f"address: {addr}", f"connected_at: {start_time}", f"disconnected_at: {end_time}"} #add client to cache
+
+    if client_name not in clients:
+        clients[client_name] = {"info": [] } #add client to cache
+
+    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    clients[client_name]["info"].append({"address": {addr}, "connected_at": {start_time}, "disconnected_at": {None}})
 
     while True:
         data = client_socket.recv(1024).decode() #receive (up to 1024 bytes)
@@ -43,8 +48,10 @@ def client_handling(client_socket, addr, client_name):
         '''
         if data.lower() == "exit":
             print(f"{client_name} disconnected")
-            clients[client_name] = (f"address: {addr}", f"connected_at: {start_time}", f"disconnected_at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}") 
+            clients[client_name]["info"].append({"address": addr, "connected_at": start_time, "disconnected_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+            client_count -=1
             break
+
         elif data.lower() == "status":
             status = []
             for name, info in clients.items():
@@ -53,13 +60,10 @@ def client_handling(client_socket, addr, client_name):
             status_str = "\n".join(status)
             client_socket.send(status_str.encode())
 
-        ''' This was the example on how to send a reponse back to the client '''
-        if data:
+        else:
             print(f"Received: {data}")
+            client_socket.send(f"{data} ACK".encode())
 
-            #send response back to client
-            upcased_data = data.upper()
-            client_socket.send(upcased_data.encode())
 
     client_socket.close() 
 
@@ -68,7 +72,7 @@ def client_handling(client_socket, addr, client_name):
 This function is to handle new connection and distribute them to where they need to go
 '''
 def start_server():
-
+    global client_count
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
     server_socket.bind(('localhost', 12345))  # Bind to localhost on port 12345
     
@@ -79,15 +83,18 @@ def start_server():
 
         client_socket, addr = server_socket.accept() #accept; gives the information about the connection
 
-        client_name = f"Client{len(clients)+ 1}"
-        client_socket.send(f"You are {client_name}".encode())
-   
-        if len(clients) > MAX_CLIENTS:
+        client_count += 1
+        if client_count > 3:
+            client_socket.send("full".encode())
+            client_count -=1
             break
-        
-        
-        thread = threading.Thread(target=client_handling, args=(client_socket,addr,client_name))
-        thread.start()
+        else:
+            client_name = f"Client{client_count}"
+            client_socket.send(f"You are {client_name}".encode())
+    
+
+            thread = threading.Thread(target=client_handling, args=(client_socket,addr,client_name))
+            thread.start()
 
         print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
 
