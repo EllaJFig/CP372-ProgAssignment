@@ -9,11 +9,12 @@ Noah Samarita       169030051
 
 import socket
 import threading
+from datetime import datetime
 
 
 MAX_CLIENTS = 3
 FILE_PATH = None
-clients = {}
+clients = {} #create client cache; should have address, start time, and end time be recorded
 client_count = 0
 
 
@@ -21,12 +22,17 @@ client_count = 0
 This function will handle the individual connections
 '''
 def client_handling(client_socket, addr):
+    global client_count
+    
+    client_name = f"{addr}" #address is used because it needs to be unique to client
+    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    end_time = None
+
     print(f"Client0{client_count} connected")
+    clients[client_name] = {"address": addr, "connected_at": start_time, "disconnected_at": end_time} #add client to cache
 
     while True:
         data = client_socket.recv(1024).decode() #receive (up to 1024 bytes)
-
-        #create client cache; should have address, start time, and end time be recorded
 
         #receive data from client
         ''' loop through and check the following;
@@ -40,9 +46,17 @@ def client_handling(client_socket, addr):
             else --> send data ACK back to client 
         '''
         if data.lower() == "exit":
-            print("Client0{client_count} disconnected")
+            print(f"Client0{client_count} disconnected")
+            clients[client_name]["disconnected_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            client_count -= 1
             break
-    
+        elif data.lower() == "status":
+            status = []
+            for name, info in clients.items():
+                status.append(f"Client0{client_count}: {info}")
+
+            status_str = "\n".join(status)
+            client_socket.send(status_str.encode())
 
         ''' This was the example on how to send a reponse back to the client '''
         if data:

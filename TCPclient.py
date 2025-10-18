@@ -13,13 +13,20 @@ def start_client():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
     client_socket.connect(('localhost', 12345))  # Connect to the server
 
-    #send message to server
-    message = input("Enter message to send: ")
-    client_socket.send(message.encode())
+    connected = True
 
-    #receive reply
-    data = client_socket.recv(1024).decode()
-    print(f"Received from server: {data}")
+    while connected:
+
+        #send message to server
+        message = input("Enter message to send: ")
+        client_socket.send(message.encode())
+
+        if message == "exit":
+            connected = False
+
+        #receive reply
+        data = client_socket.recv(1024).decode()
+        print(f"Server Response: {data} ACK")
 
     client_socket.close() #close
 
