@@ -8,39 +8,25 @@ Noah Samarita       169030051
 """
 
 import socket
+import threading
 
-''' set;
+
 MAX_CLIENTS = 3
-FILE_PATH = 
-
+FILE_PATH = None
 clients = {}
 client_count = 0
+
+
 '''
-
-
-def start_server():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
-    server_socket.bind(('localhost', 12345))  # Bind to localhost on port 12345
-    
-    server_socket.listen(3) #listen; instead of 1 set as MAX_CLIENTS
-    print("Server is listening...") #add address
-
-    #create a client count
+This function will handle the individual connections
+'''
+def client_handling(client_socket, addr):
+    print(f"Client0{client_count} connected")
 
     while True:
-
-        client_socket, addr = server_socket.accept() #accept 
-        
-        #update client count; check if max_client reached; close socket if full
-        
-        #set client name 
-        print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
-
         data = client_socket.recv(1024).decode() #receive (up to 1024 bytes)
 
-
         #create client cache; should have address, start time, and end time be recorded
-
 
         #receive data from client
         ''' loop through and check the following;
@@ -52,11 +38,13 @@ def start_server():
                     --> send file list to client
             if file is requested --> send requested file to client
             else --> send data ACK back to client 
-            
         '''
+        if data.lower() == "exit":
+            print("Client0{client_count} disconnected")
+            break
+    
 
-
-        ''' This was the example on how to send a reponse back to the client'''
+        ''' This was the example on how to send a reponse back to the client '''
         if data:
             print(f"Received: {data}")
 
@@ -64,10 +52,39 @@ def start_server():
             upcased_data = data.upper()
             client_socket.send(upcased_data.encode())
 
+    client_socket.close() 
 
 
-        #close and update cache
-        client_socket.close() 
+'''
+This function is to handle new connection and distribute them to where they need to go
+'''
+def start_server():
+    global client_count
+
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
+    server_socket.bind(('localhost', 12345))  # Bind to localhost on port 12345
+    
+    server_socket.listen(3) #listen; instead of 1 set as MAX_CLIENTS
+    print(f"Server is listening on {socket.gethostbyname(socket.gethostname())}") #add address
+
+
+    while True:
+
+        client_socket, addr = server_socket.accept() #accept; gives the information about the connection
+
+        client_count += 1
+        if client_count > MAX_CLIENTS:
+            break
+
+        thread = threading.Thread(target=client_handling, args=(client_socket,addr))
+        thread.start()
+
+
+
+        #set client name 
+        print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
+
+    client_socket.close()
 
 if __name__ == '__main__':
     start_server()
