@@ -44,7 +44,6 @@ def client_handling(client_socket, addr, client_name):
         if data.lower() == "exit":
             print(f"{client_name} disconnected")
             clients[client_name] = (f"address: {addr}", f"connected_at: {start_time}", f"disconnected_at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}") 
-            client_count -= 1
             break
         elif data.lower() == "status":
             status = []
@@ -70,30 +69,26 @@ This function is to handle new connection and distribute them to where they need
 '''
 def start_server():
 
-
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #create socket
     server_socket.bind(('localhost', 12345))  # Bind to localhost on port 12345
     
     server_socket.listen(3) #listen; instead of 1 set as MAX_CLIENTS
     print(f"Server is listening on {socket.gethostbyname(socket.gethostname())}") #add address
 
-
     while True:
 
         client_socket, addr = server_socket.accept() #accept; gives the information about the connection
 
+        client_name = f"Client{len(clients)+ 1}"
+        client_socket.send(f"You are {client_name}".encode())
    
-        if len(clients)+ 1 > MAX_CLIENTS:
+        if len(clients) > MAX_CLIENTS:
             break
         
-        client_name = f"Client{len(clients)+ 1}"
-
+        
         thread = threading.Thread(target=client_handling, args=(client_socket,addr,client_name))
         thread.start()
 
-
-
-        #set client name 
         print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
 
     client_socket.close()
