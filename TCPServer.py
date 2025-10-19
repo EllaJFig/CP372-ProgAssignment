@@ -14,7 +14,7 @@ from datetime import datetime
 
 MAX_CLIENTS = 3
 FILE_PATH = None
-clients = {} #creates client cache; should have address, start time, and end time be recorded
+clients = {} #create client cache; should have address, start time, and end time be recorded
 client_count = 0
 
 '''
@@ -87,7 +87,8 @@ def start_server():
         if client_count > 3:
             client_socket.send("full".encode())
             client_count -=1
-            break
+            client_socket.close()
+            continue
         else:
             client_name = f"Client{client_count}"
             client_socket.send(f"You are {client_name}".encode())
@@ -96,9 +97,8 @@ def start_server():
             thread = threading.Thread(target=client_handling, args=(client_socket,addr,client_name))
             thread.start()
 
-        print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
-
-    client_socket.close()
+            print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
+            
 
 if __name__ == '__main__':
     start_server()
