@@ -4,7 +4,6 @@ TCP Client Implementation
 -----------------------------
 Ella Figueiredo     169061130
 Noah Samarita       169030051
-
 """
 
 import socket

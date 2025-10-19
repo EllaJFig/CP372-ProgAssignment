@@ -4,7 +4,6 @@ TCP Server Implementation
 -----------------------------
 Ella Figueiredo     169061130
 Noah Samarita       169030051
-
 """
 
 import socket
@@ -100,10 +99,10 @@ def client_handling(client_socket, addr, client_name):
     client_socket.close() 
 
 
-
 '''
 This function is to handle new connection and distribute them to where they need to go
 '''
+
 def start_server():
     global client_count
     
