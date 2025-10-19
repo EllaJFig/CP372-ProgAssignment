@@ -14,17 +14,14 @@ def start_client():
     client_socket.connect(('localhost', 12345))  # Connect to the server
 
     connected = True
-    data = client_socket.recv(1024).decode()
-    print(f"{data}")
-
 
     greeting = client_socket.recv(1024).decode()
     print(f"\n{greeting}.\n---------------------")
-    
+
     while connected:
         
         #send message to server
-        if data.lower() != "full":
+        if greeting.lower() != "full":
             message = input("Enter message to send: ")
             client_socket.send(message.encode())
 
