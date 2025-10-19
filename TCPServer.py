@@ -14,7 +14,7 @@ from datetime import datetime
 
 MAX_CLIENTS = 3
 FILE_PATH = None
-clients = {} #create client cache; should have address, start time, and end time be recorded
+clients = {} #creates client cache; should have address, start time, and end time be recorded
 client_count = 0
 
 '''
