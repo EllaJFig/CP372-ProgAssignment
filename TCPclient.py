@@ -17,6 +17,10 @@ def start_client():
     data = client_socket.recv(1024).decode()
     print(f"{data}")
 
+
+    greeting = client_socket.recv(1024).decode()
+    print(f"\n{greeting}.\n---------------------")
+    
     while connected:
         
         #send message to server
@@ -32,7 +36,7 @@ def start_client():
             print(f"Server Response: {data}")
         else:
             connected = False
-            
+
     client_socket.close() #close
 
 if __name__ == '__main__':
