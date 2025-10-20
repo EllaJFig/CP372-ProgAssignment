@@ -20,7 +20,7 @@ def start_client():
     while connected:
         
         #send message to server
-        if greeting.lower() != "full":
+        if greeting.lower() != "Server is full. It has reached the limit of 3 clients":
             message = input("\nEnter Message to Send: ")
             client_socket.send(message.encode())
 

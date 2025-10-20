@@ -65,6 +65,7 @@ def client_handling(client_socket, addr, client_name):
                 "connected_at": start_time, 
                 "disconnected_at": 
                 datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
+            client_socket.send("Disconnected.".encode())
             client_count -=1
             break
 
@@ -143,7 +144,6 @@ def start_server():
         client_socket, addr = server_socket.accept() #accept; gives the information about the connection
         
         if client_count >= MAX_CLIENTS:
-            client_socket.send("full.".encode())
             client_socket.send("Server is full. It has reached the limit of 3 clients.".encode())
             client_socket.close()
             continue
