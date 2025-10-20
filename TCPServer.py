@@ -35,8 +35,10 @@ def client_handling(client_socket, addr, client_name):
         "connected_at": {start_time}, 
         "disconnected_at": {None}})
     
+    recent_input = None # to keep track of what what the user wants to interact with
+
     while True:
-        data = client_socket.recv(1024).decode() #receive (up to 1024 bytes)
+        data = client_socket.recv(1024).decode()#receive (up to 1024 bytes)
 
         if not data:
             print(f"{client_name} disconnected.") #this is for disconnecting unexpectedly
@@ -78,8 +80,10 @@ def client_handling(client_socket, addr, client_name):
 
             else:
                 file_list = "\n".join(i for i in server_files)
-                format_list = f" \n{file_list}"
+                format_list = f" \n{file_list}\nReply with the file name + '.txt' to view contents."
                 client_socket.send(format_list.encode())
+
+            recent_input = "list"
             
         #STATUS HANDLING
         elif data.lower() == "status":
@@ -91,13 +95,34 @@ def client_handling(client_socket, addr, client_name):
             format_status = f" \n{status_str}"
             client_socket.send(format_status.encode())
 
+            recent_input = "status"
+
+        #FILES HANDLING
+        elif data.lower() not in ["list", "status", "exit"]:
+            file_path = os.path.join(FILE_REPO, data)
+
+            if os.path.exists(file_path):
+                with open(file_path, "r") as x:
+                    content = x.read()
+
+                data_content = f"\n'{data}' content:\n\n{content}"
+                client_socket.send(data_content.encode())
+                
+                recent_input = None
+
+            else:
+                if recent_input == "list":
+                    client_socket.send("- File Invalid, Try Again.".encode())
+
+                else: 
+                    client_socket.send(f"{data} ACK".encode())
+        
         #GENERAL HANDLING
         else:
             print(f"Received: {data}")
             client_socket.send(f"{data} ACK".encode())
 
     client_socket.close() 
-
 
 '''
 This function is to handle new connection and distribute them to where they need to go
@@ -118,7 +143,7 @@ def start_server():
         client_socket, addr = server_socket.accept() #accept; gives the information about the connection
         
         if client_count >= MAX_CLIENTS:
-            client_socket.send("full".encode())
+            client_socket.send("full.".encode())
             client_socket.send("Server is full. It has reached the limit of 3 clients.".encode())
             client_socket.close()
             continue
@@ -133,8 +158,5 @@ def start_server():
 
         print(f"Connection from {addr}") #update this line to say "Client(num) connected from {addr}??"
 
-
 if __name__ == '__main__':
     start_server()
-
-

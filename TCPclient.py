@@ -21,7 +21,7 @@ def start_client():
         
         #send message to server
         if greeting.lower() != "full":
-            message = input("Enter message to send: ")
+            message = input("\nEnter Message to Send: ")
             client_socket.send(message.encode())
 
             if message == "exit":
@@ -29,7 +29,7 @@ def start_client():
 
             #receive reply
             data = client_socket.recv(1024).decode()
-            print(f"Server Response: {data}")
+            print(f"\n[Server Response] {data}")
         else:
             connected = False
 
